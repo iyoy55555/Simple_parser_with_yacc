@@ -44,21 +44,21 @@
      ELSE = 260,
      FOR = 261,
      WHILE = 262,
-     ID = 263,
-     INC_OP = 264,
-     DEC_OP = 265,
-     LE_OP = 266,
-     GE_OP = 267,
-     EQ_OP = 268,
-     NE_OP = 269,
-     AND_OP = 270,
-     OR_OP = 271,
-     MUL_ASSIGN = 272,
-     DIV_ASSIGN = 273,
-     MOD_ASSIGN = 274,
-     ADD_ASSIGN = 275,
-     DEC_ASSIGN = 276,
-     RETURN = 277,
+     INC_OP = 263,
+     DEC_OP = 264,
+     LE_OP = 265,
+     GE_OP = 266,
+     EQ_OP = 267,
+     NE_OP = 268,
+     AND_OP = 269,
+     OR_OP = 270,
+     MUL_ASSIGN = 271,
+     DIV_ASSIGN = 272,
+     MOD_ASSIGN = 273,
+     ADD_ASSIGN = 274,
+     DEC_ASSIGN = 275,
+     RETURN = 276,
+     ID = 277,
      I_CONST = 278,
      F_CONST = 279,
      S_CONST = 280,
@@ -75,21 +75,21 @@
 #define ELSE 260
 #define FOR 261
 #define WHILE 262
-#define ID 263
-#define INC_OP 264
-#define DEC_OP 265
-#define LE_OP 266
-#define GE_OP 267
-#define EQ_OP 268
-#define NE_OP 269
-#define AND_OP 270
-#define OR_OP 271
-#define MUL_ASSIGN 272
-#define DIV_ASSIGN 273
-#define MOD_ASSIGN 274
-#define ADD_ASSIGN 275
-#define DEC_ASSIGN 276
-#define RETURN 277
+#define INC_OP 263
+#define DEC_OP 264
+#define LE_OP 265
+#define GE_OP 266
+#define EQ_OP 267
+#define NE_OP 268
+#define AND_OP 269
+#define OR_OP 270
+#define MUL_ASSIGN 271
+#define DIV_ASSIGN 272
+#define MOD_ASSIGN 273
+#define ADD_ASSIGN 274
+#define DEC_ASSIGN 275
+#define RETURN 276
+#define ID 277
 #define I_CONST 278
 #define F_CONST 279
 #define S_CONST 280
@@ -104,7 +104,7 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 22 "compiler_hw2.y"
+#line 38 "compiler_hw2.y"
 {
     int i_val;
     double f_val;

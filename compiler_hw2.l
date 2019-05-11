@@ -7,7 +7,8 @@
 extern YYSTYPE yylval; //YYSTYPE
 char buf[256];
 int scope_state=0;
-char * id_temp;
+
+char type_temp[10];
 /* This macro is used to record code line */
 #define CONCAT { strncat(buf, yytext, 256 - strlen(buf) - 1); }
 %}
@@ -75,11 +76,11 @@ id			{letter}+({letter}|{digit})*
 "while"		{ CONCAT  return WHILE; }
 
  /* Declaration Keywords */
-"void"		{ CONCAT return VOID;}
-"int"		{ CONCAT return INT; }
-"float"  	{ CONCAT return FLOAT; } 
-"string"  	{ CONCAT return STRING; }
-"bool"  	{ CONCAT return BOOL;}
+"void"		{ CONCAT  char * t = malloc(10);strcpy(t,yytext);yylval.string=t;  return VOID;}
+"int"		{ CONCAT  char * t = malloc(10);strcpy(t,yytext);yylval.string=t;  return INT; }
+"float"  	{ CONCAT  char * t = malloc(10);strcpy(t,yytext);yylval.string=t;  return FLOAT; } 
+"string"  	{ CONCAT  char * t = malloc(10);strcpy(t,yytext);yylval.string=t;  return STRING; }
+"bool"  	{ CONCAT  char * t = malloc(10);strcpy(t,yytext);yylval.string=t; return BOOL;}
 
  /* boolean Keywords */
 "true"      {  CONCAT return I_CONST;}
@@ -107,7 +108,8 @@ id			{letter}+({letter}|{digit})*
 \/\/.*	{ CONCAT }
 
  /* Variable ID */
- {id}       {  CONCAT id_temp=malloc(strlen(yytext));strcpy(id_temp,yytext); return(ID);}
+ {id}       {  CONCAT char * t = malloc(10);strcpy(t,yytext);yylval.string=t; 
+                        return(ID);}
 
  /* others */
 

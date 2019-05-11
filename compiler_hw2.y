@@ -6,15 +6,16 @@
 extern int scope_state;
 extern int yylineno;
 extern int yylex();
-extern char* id_temp;
+extern char type_temp[10];
+char para_buf[256];
 int yyerror(char*);
 extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
 
 struct symbol{
 	int index;
-	char name[10];
-	char entry_type[10];
+	char name[10]; /*malloc pointer may segmentation fault*/
+	char entry_type[15];
 	char data_type[7];
 	int scope_level;
 	char formal_parameters[100];
@@ -23,7 +24,7 @@ struct symbol{
 };
 /* Symbol table function - you can add new function if needed. */
 int lookup_symbol();
-void create_symbol(char *,int);
+void create_symbol(char *,int,char *,char *);
 void insert_symbol(int,struct symbol *);
 void dump_symbol();
 
@@ -47,22 +48,23 @@ struct symbol * index_stack[30];
 %token INC_OP DEC_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
 %token DEC_ASSIGN RETURN
-%token ID
+%token <string> ID
 
 /* Token with return, which need to sepcify type */
 %token <i_val> I_CONST
 %token <f_val> F_CONST
 %token <string> S_CONST
-%token <i_val> INT
-%token <f_val> FLOAT
-%token <i_val> BOOL
-%token <i_val> VOID
+%token <string> INT
+%token <string> FLOAT
+%token <string> BOOL
+%token <string> VOID
 %token <string> STRING
 
 /* Nonterminal with return, which need to sepcify type */
-
+%type <string> type
 /* Yacc will start at this nonterminal */
 %start program
+
 
 /* Grammar section */
 %%
@@ -89,8 +91,8 @@ print_element
 
 
 declaration
-    : type ID '=' initializer ';' {create_symbol(id_temp,scope_state);}
-    | type ID ';' {create_symbol(id_temp,scope_state);} 
+    : type ID '=' initializer ';' {create_symbol($2,scope_state,"variable",$1);}
+    | type ID ';' {create_symbol($2,scope_state,"variable",$1);} 
 ;
 
 statement
@@ -245,8 +247,7 @@ postfix_expression
 
 
 function_declaration
-	: func_id parameter compound_stat  {}
-	| func_id parameter ';'
+	: type ID parameter compound_stat  {create_symbol($2,scope_state,"function",$1);}
 ;
 
 parameter
@@ -255,13 +256,20 @@ parameter
 ;
 
 identifier_list
-	: identifier_list ',' type ID {create_symbol(id_temp,scope_state+1);}
-	| type ID {create_symbol(id_temp,scope_state+1);}
+	: identifier_list ',' type ID {
+        if(strlen(para_buf)!=0)
+            strcat(para_buf,", ");
+        strcat(para_buf,$3);
+        create_symbol($4,scope_state+1,"parameter",$3);}
+	| type ID {
+        if(strlen(para_buf)!=0)
+            strcat(para_buf,", ");
+        strcat(para_buf,$1);
+        create_symbol($2,scope_state+1,"parameter",$1);}
 ;
 
 
-func_id
-    : type ID {printf("%s %d\n",id_temp,scope_state);create_symbol(id_temp,scope_state);}
+
 ;
 /* actions can be taken when meet the token or rule */
 
@@ -271,11 +279,11 @@ parameter
 ;
 
 type
-    : INT {}
-    | FLOAT {}
-    | BOOL  {}
-    | STRING {}
-    | VOID {}
+    : INT { $$ =$1;}
+    | FLOAT {$$ =$1;}
+    | BOOL  {$$ =$1;}
+    | STRING {$$ =$1;}
+    | VOID {$$ =$1;}
 ;
 
 initializer
@@ -305,14 +313,19 @@ int yyerror(char *s)
     printf("\n|-----------------------------------------------|\n\n");
 }
 
-void create_symbol(char* name, int scope) {
+void create_symbol(char* name, int scope,char* kind, char* type) {
 	struct symbol* s = malloc(sizeof(struct symbol));
 	
     /*insert data*/
 	strcpy(s->name, name);
-    free(id_temp);
 	s->scope_level = scope;
 	int hash_num = s->name[0]%30;
+    strcpy(s->entry_type,kind);
+    strcpy(s->data_type,type);
+    if(strcmp("function",kind)==0){
+        strcpy(s->formal_parameters,para_buf);
+        memset(para_buf,0,strlen(para_buf));
+    }
 	insert_symbol(hash_num,s);
 
 
@@ -349,7 +362,8 @@ void dump_symbol(int scope) {
 	struct symbol * s;
     s=index_stack[scope];
     while(s!=NULL){
-        printf("%-10d%-10s\n",index,s->name);
+        printf("%-10d%-10s%-12s%-10s%-10d%s\n",
+            index,s->name,s->entry_type,s->data_type,s->scope_level,s->formal_parameters);
         index_stack[scope]=s->next_index;
         index++;
         free(s);

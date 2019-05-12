@@ -12,6 +12,7 @@ int yyerror(char*);
 extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
 
+
 struct symbol{
 	int index;
 	char name[10]; /*malloc pointer may segmentation fault*/
@@ -23,10 +24,11 @@ struct symbol{
     struct symbol * next_index;
 };
 /* Symbol table function - you can add new function if needed. */
-int lookup_symbol();
+int lookup_symbol(const char *);
 void create_symbol(char *,int,char *,char *);
 void insert_symbol(int,struct symbol *);
 void dump_symbol();
+void semantic_error(char * , char *);
 
 struct symbol * table[30][30];
 struct symbol * index_stack[30];
@@ -91,8 +93,16 @@ print_element
 
 
 declaration
-    : type ID '=' initializer ';' {create_symbol($2,scope_state,"variable",$1);}
-    | type ID ';' {create_symbol($2,scope_state,"variable",$1);} 
+    : type ID '=' initializer ';' {
+        if(lookup_symbol($2))
+            semantic_error("Redeclared variable",$2);
+        else
+            create_symbol($2,scope_state,"variable",$1);}
+    | type ID ';' {
+        if(lookup_symbol($2))
+            semantic_error("Redeclared variable",$2);
+        else
+            create_symbol($2,scope_state,"variable",$1);} 
 ;
 
 statement
@@ -352,7 +362,17 @@ void insert_symbol(int hash_num, struct symbol * s) {
 		p->next=s;
 	}
 }
-int lookup_symbol() {}
+int lookup_symbol(const char * name) {
+    int hash_num = name[0]%30;
+    struct symbol * s = table[scope_state][hash_num];
+    while(s!=NULL){
+        if(strcmp(name , s->name)==0){
+            return 1;
+        }
+        s=s->next;
+    }
+    return 0;
+}
 void dump_symbol(int scope) {
     if(index_stack[scope]==NULL)return;
 
@@ -372,4 +392,11 @@ void dump_symbol(int scope) {
     for(int i=0;i<30;++i){
         table[scope][i]=NULL;
     }
+}
+
+void semantic_error(char * error_type,char * name){
+    printf("\n|-----------------------------------------------|\n");
+    printf("| Error found in line %d: %s\n", yylineno, buf);
+    printf("| %s %s",error_type, name);
+    printf("\n|-----------------------------------------------|\n\n");
 }

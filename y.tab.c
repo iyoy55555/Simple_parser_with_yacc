@@ -144,6 +144,7 @@ int yyerror(char*);
 extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
 
+
 struct symbol{
 	int index;
 	char name[10]; /*malloc pointer may segmentation fault*/
@@ -155,10 +156,11 @@ struct symbol{
     struct symbol * next_index;
 };
 /* Symbol table function - you can add new function if needed. */
-int lookup_symbol();
+int lookup_symbol(const char *);
 void create_symbol(char *,int,char *,char *);
 void insert_symbol(int,struct symbol *);
 void dump_symbol();
+void semantic_error(char * , char *);
 
 struct symbol * table[30][30];
 struct symbol * index_stack[30];
@@ -185,14 +187,14 @@ struct symbol * index_stack[30];
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 39 "compiler_hw2.y"
+#line 41 "compiler_hw2.y"
 {
     int i_val;
     double f_val;
     char* string;
 }
 /* Line 193 of yacc.c.  */
-#line 196 "y.tab.c"
+#line 198 "y.tab.c"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
@@ -205,7 +207,7 @@ typedef union YYSTYPE
 
 
 /* Line 216 of yacc.c.  */
-#line 209 "y.tab.c"
+#line 211 "y.tab.c"
 
 #ifdef short
 # undef short
@@ -525,16 +527,16 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    73,    73,    74,    78,    79,    80,    84,    88,    89,
-      94,    95,    99,   100,   101,   102,   103,   104,   108,   109,
-     113,   114,   118,   121,   122,   126,   127,   131,   132,   136,
-     137,   141,   142,   146,   147,   151,   152,   153,   157,   158,
-     159,   160,   164,   165,   166,   170,   177,   178,   179,   180,
-     181,   186,   187,   188,   193,   194,   198,   199,   203,   204,
-     208,   209,   213,   214,   218,   222,   223,   227,   228,   229,
-     230,   231,   232,   236,   237,   241,   242,   243,   244,   245,
-     250,   254,   255,   259,   264,   277,   278,   282,   283,   284,
-     285,   286,   290,   291,   292
+       0,    75,    75,    76,    80,    81,    82,    86,    90,    91,
+      96,   101,   109,   110,   111,   112,   113,   114,   118,   119,
+     123,   124,   128,   131,   132,   136,   137,   141,   142,   146,
+     147,   151,   152,   156,   157,   161,   162,   163,   167,   168,
+     169,   170,   174,   175,   176,   180,   187,   188,   189,   190,
+     191,   196,   197,   198,   203,   204,   208,   209,   213,   214,
+     218,   219,   223,   224,   228,   232,   233,   237,   238,   239,
+     240,   241,   242,   246,   247,   251,   252,   253,   254,   255,
+     260,   264,   265,   269,   274,   287,   288,   292,   293,   294,
+     295,   296,   300,   301,   302
 };
 #endif
 
@@ -1554,37 +1556,45 @@ yyreduce:
   switch (yyn)
     {
         case 10:
-#line 94 "compiler_hw2.y"
-    {create_symbol((yyvsp[(2) - (5)].string),scope_state,"variable",(yyvsp[(1) - (5)].string));}
+#line 96 "compiler_hw2.y"
+    {
+        if(lookup_symbol((yyvsp[(2) - (5)].string)))
+            semantic_error("Redeclared variable",(yyvsp[(2) - (5)].string));
+        else
+            create_symbol((yyvsp[(2) - (5)].string),scope_state,"variable",(yyvsp[(1) - (5)].string));}
     break;
 
   case 11:
-#line 95 "compiler_hw2.y"
-    {create_symbol((yyvsp[(2) - (3)].string),scope_state,"variable",(yyvsp[(1) - (3)].string));}
+#line 101 "compiler_hw2.y"
+    {
+        if(lookup_symbol((yyvsp[(2) - (3)].string)))
+            semantic_error("Redeclared variable",(yyvsp[(2) - (3)].string));
+        else
+            create_symbol((yyvsp[(2) - (3)].string),scope_state,"variable",(yyvsp[(1) - (3)].string));}
     break;
 
   case 23:
-#line 121 "compiler_hw2.y"
+#line 131 "compiler_hw2.y"
     {dump_symbol(scope_state);}
     break;
 
   case 24:
-#line 122 "compiler_hw2.y"
+#line 132 "compiler_hw2.y"
     {dump_symbol(scope_state); scope_state--;}
     break;
 
   case 80:
-#line 250 "compiler_hw2.y"
+#line 260 "compiler_hw2.y"
     {create_symbol((yyvsp[(2) - (4)].string),scope_state,"function",(yyvsp[(1) - (4)].string));}
     break;
 
   case 82:
-#line 255 "compiler_hw2.y"
+#line 265 "compiler_hw2.y"
     {}
     break;
 
   case 83:
-#line 259 "compiler_hw2.y"
+#line 269 "compiler_hw2.y"
     {
         if(strlen(para_buf)!=0)
             strcat(para_buf,", ");
@@ -1593,7 +1603,7 @@ yyreduce:
     break;
 
   case 84:
-#line 264 "compiler_hw2.y"
+#line 274 "compiler_hw2.y"
     {
         if(strlen(para_buf)!=0)
             strcat(para_buf,", ");
@@ -1602,43 +1612,43 @@ yyreduce:
     break;
 
   case 87:
-#line 282 "compiler_hw2.y"
+#line 292 "compiler_hw2.y"
     { (yyval.string) =(yyvsp[(1) - (1)].string);}
     break;
 
   case 88:
-#line 283 "compiler_hw2.y"
+#line 293 "compiler_hw2.y"
     {(yyval.string) =(yyvsp[(1) - (1)].string);}
     break;
 
   case 89:
-#line 284 "compiler_hw2.y"
+#line 294 "compiler_hw2.y"
     {(yyval.string) =(yyvsp[(1) - (1)].string);}
     break;
 
   case 90:
-#line 285 "compiler_hw2.y"
+#line 295 "compiler_hw2.y"
     {(yyval.string) =(yyvsp[(1) - (1)].string);}
     break;
 
   case 91:
-#line 286 "compiler_hw2.y"
+#line 296 "compiler_hw2.y"
     {(yyval.string) =(yyvsp[(1) - (1)].string);}
     break;
 
   case 92:
-#line 290 "compiler_hw2.y"
+#line 300 "compiler_hw2.y"
     {}
     break;
 
   case 93:
-#line 291 "compiler_hw2.y"
+#line 301 "compiler_hw2.y"
     {}
     break;
 
 
 /* Line 1267 of yacc.c.  */
-#line 1642 "y.tab.c"
+#line 1652 "y.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1852,7 +1862,7 @@ yyreturn:
 }
 
 
-#line 294 "compiler_hw2.y"
+#line 304 "compiler_hw2.y"
 
 
 /* C code section */
@@ -1914,7 +1924,17 @@ void insert_symbol(int hash_num, struct symbol * s) {
 		p->next=s;
 	}
 }
-int lookup_symbol() {}
+int lookup_symbol(const char * name) {
+    int hash_num = name[0]%30;
+    struct symbol * s = table[scope_state][hash_num];
+    while(s!=NULL){
+        if(strcmp(name , s->name)==0){
+            return 1;
+        }
+        s=s->next;
+    }
+    return 0;
+}
 void dump_symbol(int scope) {
     if(index_stack[scope]==NULL)return;
 
@@ -1934,5 +1954,12 @@ void dump_symbol(int scope) {
     for(int i=0;i<30;++i){
         table[scope][i]=NULL;
     }
+}
+
+void semantic_error(char * error_type,char * name){
+    printf("\n|-----------------------------------------------|\n");
+    printf("| Error found in line %d: %s\n", yylineno, buf);
+    printf("| %s %s",error_type, name);
+    printf("\n|-----------------------------------------------|\n\n");
 }
 
